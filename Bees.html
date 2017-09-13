@@ -1,0 +1,214 @@
+<!DOCTYPE html> 
+<html>
+<head> 
+</head> 
+<body onload="setup(2000)">
+
+<div id="wrapper">
+    <div id="instructions" style="position: absolute; z-index: 1; left: 160px; top: 200px; text-align: center; font-size:250%;">
+    </div>
+    <div id="buttons">
+      <button onclick="increaseBees()" type="button">+</button> 
+      <button onclick="decreaseBees()" type="button">-</button> 
+    </div> 
+</div>
+
+<canvas id="canvas"></canvas>
+
+<script> 
+
+//global variables
+var bees = []; 
+
+var canvas = document.getElementById('canvas');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+var ctx = canvas.getContext("2d");
+
+
+var mouseData = [];
+var hole = [];
+
+var animationId;
+
+document.body.onmousedown = function(event){
+
+  mouseData['mouseX'] = event.clientX;
+  mouseData['mouseY'] = event.clientY;
+  mouseData['clickTime'] = (new Date()).getTime();
+}
+
+function increaseBees(){
+  var num = bees.length;
+  bees = [];
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // location.reload();
+  setup(num + 500);
+}
+
+function decreaseBees(){
+  var num = bees.length;
+  bees = [];
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // location.reload();
+  setup(num - 500);
+}
+
+
+function provideInstructions(){
+  var i = 0; 
+  var countDown = ["3", "2", "1", "Start!", ""];
+  var text = document.getElementById("instructions");
+
+  text.innerHTML = "Try to catch as many bees as you can before the time runs out!";
+  
+  var interval = setInterval(function(){
+    document.getElementById("instructions").style.left = "500px";
+    text.innerHTML = countDown[i];
+    i++;
+  }, 1000);
+
+  setTimeout(function(){
+    clearInterval(interval);
+  }, (countDown.length + 1) * 1000)
+}
+
+function setup(n) {
+  bees = [];
+  for (var i=0; i<n; i++) {
+    bees.push(new Bee());
+  }
+  provideInstructions();
+  draw();
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawHole();
+  for (var i=0; i<bees.length; i++) {
+    bees[i].move();
+    if(!bees[i].insideHole()){
+      bees[i].display();
+    }
+    else{
+      bees.splice(i, 1);
+    }
+  }
+  animationId = requestAnimationFrame(draw);
+}
+
+
+function Bee() {
+  this.x = Math.floor(Math.random()*screen.width);
+  this.y = Math.floor(Math.random()*screen.height);
+
+  this.diameter = 10;
+  this.speed = 7;
+
+  this.lastPoint = {'x': -1, 'y': -1};
+
+
+  this.move = function() {
+
+    var currentTime = (new Date()).getTime();
+
+    if((mouseData['mouseX'] && mouseData['mouseY'])){
+
+      var dist = Math.sqrt(Math.pow((this.y - mouseData['mouseY']),2) + Math.pow((this.x - mouseData['mouseX']), 2));
+
+      if(currentTime - mouseData['clickTime'] < 3000 && dist < 100){
+        this.moveAwayFromPoint(mouseData['mouseX'], mouseData['mouseY']);
+      }
+
+    }
+
+    var bool = Math.random();
+
+    if(bool < 0.25){
+      this.x += this.speed;
+      this.y += this.speed;
+    }
+    else if(bool < 0.5){
+      this.x -= this.speed;
+      this.y -= this.speed;
+    }
+    else if(bool < 0.75){
+      this.x += this.speed;
+      this.y -= this.speed;
+    }
+    else{
+      this.x -= this.speed;
+      this.y += this.speed;
+    }
+
+  };
+
+  this.moveAwayFromPoint = function(pointX, pointY){
+        if(this.x > pointX){
+          this.x += this.speed;
+        }
+        if(this.x < pointX){
+          this.x -= this.speed;
+        }
+        if(this.y > pointY){
+          this.y += this.speed;
+        }
+        if(this.y < pointY){
+          this.y -= this.speed;
+        }
+  };
+
+    this.moveTowardsPoint = function(pointX, pointY){
+        if(this.x > pointX){
+          this.x -= this.speed;
+        }
+        if(this.x < pointX){
+          this.x += this.speed;
+        }
+        if(this.y > pointY){
+          this.y -= this.speed;
+        }
+        if(this.y < pointY){
+          this.y += this.speed;
+        }
+  };
+
+
+  this.display = function() {
+  	ctx.beginPath();
+    ctx.arc(this.x, this.y, this.diameter, 0.1, Math.PI*2);
+    ctx.fillStyle = "yellow";
+    ctx.fill();
+    ctx.stroke();
+    ctx.closePath();
+  };
+
+  this.insideHole = function(){
+    var distFromHole = Math.sqrt(Math.pow((this.y - hole['y']),2) + Math.pow((this.x - hole['x']), 2));
+
+    if(distFromHole < hole['radius']){
+      return true;
+    }
+    return false;
+  }
+
+}
+
+function drawHole(){
+  if(canvas.getContext){
+    ctx.beginPath();
+    ctx.arc(canvas.width/2, canvas.height/2, 75, Math.PI*2, Math.PI*1.99, false);
+    hole['x'] = canvas.width/2;
+    hole['y'] = canvas.height/2;
+    hole['radius'] = 75;
+    ctx.fillStyle = "black";
+    ctx.fill();
+    ctx.closePath();
+  }
+}
+
+
+</script>
+</body> 
+
+</html> 
