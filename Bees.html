@@ -7,6 +7,10 @@
 <div id="wrapper">
     <div id="instructions" style="position: absolute; z-index: 1; left: 160px; top: 200px; text-align: center; font-size:250%;">
     </div>
+    <div id="count" style="position: absolute; z-index: 1; right: 0px; top: 30px; font-size:250%;">
+    </div>
+    <div id="timer" style="position: absolute; z-index: 1; left: 0px; top: 30px; font-size:250%;">
+    </div>
     <div id="buttons">
       <button onclick="increaseBees()" type="button">+</button> 
       <button onclick="decreaseBees()" type="button">-</button> 
@@ -30,6 +34,8 @@ var mouseData = [];
 var hole = [];
 
 var animationId;
+var count;
+var collisionEnabled = false;
 
 document.body.onmousedown = function(event){
 
@@ -63,23 +69,45 @@ function provideInstructions(){
   text.innerHTML = "Try to catch as many bees as you can before the time runs out!";
   
   var interval = setInterval(function(){
-    document.getElementById("instructions").style.left = "500px";
+    document.getElementById("instructions").style.left = "650px";
     text.innerHTML = countDown[i];
     i++;
   }, 1000);
 
   setTimeout(function(){
     clearInterval(interval);
+    timer();
+    collisionEnabled = true;
   }, (countDown.length + 1) * 1000)
+
+}
+
+function timer(){
+  console.log('hi');
+  var start = 90;
+
+  setTimeout(function(){
+    clearInterval(timer);
+    cancelAnimationFrame(animationId);
+    alert(count + " bees remaining");
+  }, (start + 1) *1000);
+
+  var timer = setInterval(function(){
+    start --;
+      document.getElementById("timer").innerHTML = start + "s";
+  }, 1000);
+
 }
 
 function setup(n) {
+  count = n;
   bees = [];
   for (var i=0; i<n; i++) {
     bees.push(new Bee());
   }
   provideInstructions();
   draw();
+  document.getElementById("count").innerHTML = count;
 }
 
 function draw() {
@@ -87,12 +115,17 @@ function draw() {
   drawHole();
   for (var i=0; i<bees.length; i++) {
     bees[i].move();
-    if(!bees[i].insideHole()){
+    if(collisionEnabled){
+          if(!bees[i].insideHole()){
       bees[i].display();
     }
     else{
       bees.splice(i, 1);
+      count--;
+      document.getElementById("count").innerHTML = count;
     }
+    }
+
   }
   animationId = requestAnimationFrame(draw);
 }
@@ -145,16 +178,16 @@ function Bee() {
 
   this.moveAwayFromPoint = function(pointX, pointY){
         if(this.x > pointX){
-          this.x += this.speed;
+          this.x += this.speed*4;
         }
         if(this.x < pointX){
-          this.x -= this.speed;
+          this.x -= this.speed*4;
         }
         if(this.y > pointY){
-          this.y += this.speed;
+          this.y += this.speed*4;
         }
         if(this.y < pointY){
-          this.y -= this.speed;
+          this.y -= this.speed*4;
         }
   };
 
@@ -189,7 +222,7 @@ function Bee() {
     if(distFromHole < hole['radius']){
       return true;
     }
-    return false;
+      return false;
   }
 
 }
