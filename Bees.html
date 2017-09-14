@@ -19,6 +19,7 @@
 
 <canvas id="canvas"></canvas>
 
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 <script> 
 
 //global variables
@@ -69,7 +70,7 @@ function provideInstructions(){
   text.innerHTML = "Try to catch as many bees as you can before the time runs out!";
   
   var interval = setInterval(function(){
-    document.getElementById("instructions").style.left = "650px";
+    document.getElementById("instructions").style.left = "630px";
     text.innerHTML = countDown[i];
     i++;
   }, 1000);
